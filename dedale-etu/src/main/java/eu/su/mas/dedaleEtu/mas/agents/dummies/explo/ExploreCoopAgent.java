@@ -3,6 +3,7 @@ package eu.su.mas.dedaleEtu.mas.agents.dummies.explo;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.su.mas.dedale.env.EntityCharacteristics;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedale.mas.agent.behaviours.platformManagment.*;
 
@@ -22,12 +23,12 @@ import jade.core.behaviours.Behaviour;
  *  - You should give him the list of agents'name to send its map to in parameter when creating the agent.
  *   Object [] entityParameters={"Name1","Name2};
  *   ag=createNewDedaleAgent(c, agentName, ExploreCoopAgent.class.getName(), entityParameters);
- *  
+ *
  * It stops when all nodes have been visited.
- * 
- * 
+ *
+ *
  *  </pre>
- *  
+ *
  * @author hc
  *
  */
@@ -37,59 +38,57 @@ public class ExploreCoopAgent extends AbstractDedaleAgent {
 
 	private static final long serialVersionUID = -7969469610241668140L;
 	private MapRepresentation myMap;
-	
+
 
 	/**
 	 * This method is automatically called when "agent".start() is executed.
 	 * Consider that Agent is launched for the first time. 
 	 * 			1) set the agent attributes 
 	 *	 		2) add the behaviours
-	 *          
+	 *
 	 */
 	protected void setup(){
 
 		super.setup();
-		
+
 		//get the parameters added to the agent at creation (if any)
 		final Object[] args = getArguments();
-		
-		List<String> list_agentNames=new ArrayList<String>();
-		
-		if(args.length==0){
-			System.err.println("Error while creating the agent, names of agent to contact expected");
-			System.exit(-1);
-		}else{
-			int i=2;// WARNING YOU SHOULD ALWAYS START AT 2. This will be corrected in the next release.
-			while (i<args.length) {
-				list_agentNames.add((String)args[i]);
-				i++;
+		List<String> list_agentNames = new ArrayList<>();
+
+		if (args != null && args.length > 0) {
+			EntityCharacteristics ec = (EntityCharacteristics) args[0];
+
+			List<String> userParams = ec.getUserParameters();
+
+			if (userParams != null && !userParams.isEmpty()) {
+				list_agentNames.addAll(userParams);
 			}
 		}
 
 		List<Behaviour> lb=new ArrayList<Behaviour>();
-		
+
 		/************************************************
-		 * 
+		 *
 		 * ADD the behaviours of the Dummy Moving Agent
-		 * 
+		 *
 		 ************************************************/
-		
+
 		lb.add(new ExploCoopBehaviour(this,this.myMap,list_agentNames));
 
-		
-		
+
+
 		/***
 		 * MANDATORY TO ALLOW YOUR AGENT TO BE DEPLOYED CORRECTLY
 		 */
-		
-		
+
+
 		addBehaviour(new StartMyBehaviours(this,lb));
-		
+
 		System.out.println("the  agent "+this.getLocalName()+ " is started");
 
 	}
-	
-	
+
+
 	/**
 	 * This method is automatically called after doDelete()
 	 */

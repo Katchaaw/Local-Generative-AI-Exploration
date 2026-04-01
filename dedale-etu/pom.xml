@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.su.mas</groupId>
 	<artifactId>dedale-etu</artifactId>
@@ -25,6 +25,7 @@
 			<email>cedric.herpson@lip6.fr</email>
 		</developer>
 	</developers>
+
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -51,6 +52,16 @@
 
 	<dependencies>
 		<!-- from Jdk11, javaFx is no longer part of JVM -->
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j</artifactId>
+			<version>0.36.0</version> </dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-google-ai-gemini</artifactId>
+			<version>0.36.0</version> </dependency>
 
 		<dependency>
 			<groupId>org.openjfx</groupId>
@@ -97,9 +108,9 @@
 
 		<!--  Jade -->
 		<dependency>
-    		<groupId>com.gitlab.jade-project</groupId>
-    		<artifactId>jade</artifactId>
-    		<version>${jade.version}</version>
+			<groupId>com.gitlab.jade-project</groupId>
+			<artifactId>jade</artifactId>
+			<version>${jade.version}</version>
 		</dependency>
 
 		<!-- GraphStream -->
@@ -136,10 +147,10 @@
 		<!-- Junit -->
 		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
 		<dependency>
-    		<groupId>org.junit.jupiter</groupId>
-    		<artifactId>junit-jupiter-api</artifactId>
-    		<version>${junitJupiter.version}</version>
-    		<scope>test</scope>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>${junitJupiter.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
@@ -166,15 +177,15 @@
 		</dependency>
 		-->
 		<dependency>
-		    <groupId>com.gitlab.dedale</groupId>
-	    	<artifactId>dedale</artifactId>
-	    	<version>${dedale.version}</version>
+			<groupId>com.gitlab.dedale</groupId>
+			<artifactId>dedale</artifactId>
+			<version>${dedale.version}</version>
 		</dependency>
 
 		<dependency>
-		    <groupId>com.gitlab.deltas</groupId>
-	    	<artifactId>mas</artifactId>
-	    	<version>-SNAPSHOT</version>
+			<groupId>com.gitlab.deltas</groupId>
+			<artifactId>mas</artifactId>
+			<version>-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
