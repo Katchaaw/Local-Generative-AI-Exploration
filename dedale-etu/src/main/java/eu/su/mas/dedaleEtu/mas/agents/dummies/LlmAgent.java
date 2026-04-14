@@ -21,13 +21,7 @@ public class LlmAgent extends AbstractDedaleAgent {
         eu.su.mas.dedale.env.EntityCharacteristics ec = (eu.su.mas.dedale.env.EntityCharacteristics) args[0];
 
         List<String> userParams = ec.getUserParameters();
-
-        if (userParams != null && !userParams.isEmpty()) {
-            this.apiKey = userParams.get(0);
-            System.out.println("Clé API récupérée avec succès.");
-        } else {
-            System.err.println("Attention : Aucune clé API trouvée dans userParameters (gemini.json)");
-        }
+        
         
         initializeBrain();
         List<Behaviour> lb=new ArrayList<Behaviour>();
@@ -36,13 +30,12 @@ public class LlmAgent extends AbstractDedaleAgent {
     }
 
     private void initializeBrain() {
-        if (this.apiKey == null) return;
-        
-        dev.langchain4j.model.googleai.GoogleAiGeminiChatModel model =
-                dev.langchain4j.model.googleai.GoogleAiGeminiChatModel.builder()
-                        .apiKey(this.apiKey)
-                        .modelName("gemini-2.5-flash")
-                        .logRequestsAndResponses(true)
+        dev.langchain4j.model.ollama.OllamaChatModel model =
+                dev.langchain4j.model.ollama.OllamaChatModel.builder()
+                        .baseUrl("http://localhost:11434")
+                        .modelName("llama3.2:3b")        
+                        .logRequests(true)
+                        .logResponses(true)
                         .build();
 
         this.brain = dev.langchain4j.service.AiServices.create(AgentBrain.class, model);

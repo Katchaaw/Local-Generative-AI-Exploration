@@ -36,11 +36,11 @@ public class LlmTestBehaviour extends TickerBehaviour {
                     + ". Noeuds voisins : " + nodesFound.toString()
                     + ". Réponds par l'ID d'un noeud voisin uniquement.";
 
-            System.out.println(myAgent.getLocalName() + " demande à Gemini...");
+            System.out.println(myAgent.getLocalName() + " demande à Ollama...");
 
             try {
                 String nextNodeId = agentIA.getBrain().decideNextMove(prompt).trim();
-                System.out.println("Gemini suggère : " + nextNodeId);
+                System.out.println("Le bot suggère : " + nextNodeId);
 
                 boolean success = myAgent.moveTo(new GsLocation(nextNodeId));
 
@@ -51,7 +51,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                 }
 
             } catch (Exception e) {
-                System.err.println("Erreur Gemini : " + e.getMessage());
+                System.err.println("Erreur LLM : " + e.getMessage());
             }
         }
     }

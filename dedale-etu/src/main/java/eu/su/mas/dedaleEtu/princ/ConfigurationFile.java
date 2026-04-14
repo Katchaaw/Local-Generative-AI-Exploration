@@ -169,7 +169,8 @@ public final class ConfigurationFile {
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agent-1wumpus-1collect.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agent-2collect.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agent-2explo-1human.json";
-	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/gemini.json";
+	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/gemini.json";
+	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/OllamaBot.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agent-2-explo-coop.json";
 
 
