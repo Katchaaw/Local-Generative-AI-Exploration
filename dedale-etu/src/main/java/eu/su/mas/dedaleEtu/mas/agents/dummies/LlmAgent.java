@@ -66,7 +66,6 @@ public class LlmAgent extends AbstractDedaleAgent {
 
     protected void afterMove() {
         super.afterMove();
-        // TODO: Réinitialiser le cerveau complet sur un simple déplacement n'est pas optimisé.
         initializeBrain();
     }
 
