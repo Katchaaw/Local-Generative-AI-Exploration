@@ -56,7 +56,6 @@ public class LlmTestBehaviour extends TickerBehaviour {
         // Initialisation de la carte
         if (this.myMap == null) this.myMap = new MapRepresentation(this.myAgent.getLocalName());
 
-
         // Localisation
         Location myPosition = myAgent.getCurrentPosition();
 
@@ -104,7 +103,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
 
             // On lui donne la map de ce qu'il a déjà découvert
             promptBuilder.append("Topologie globale découverte (Arêtes) : ").append(String.join(", ", knownEdges)).append(".\n");
-            promptBuilder.append("Analyse la topologie et choisis le meilleur noeud voisin pour continuer l'exploration. Réponds UNIQUEMENT par son ID.");
+            promptBuilder.append("Analyse la topologie et choisis le meilleur noeud voisin pour continuer l'exploration.");
 
             String prompt = promptBuilder.toString();
             System.out.println(myAgent.getLocalName() + " demande à Ollama...");
@@ -120,19 +119,10 @@ public class LlmTestBehaviour extends TickerBehaviour {
                 long duration = endTime - startTime;
 
                 System.out.println("Temps de réponse LLM : " + duration + " ms");
-                System.out.println("Le bot suggère : " + rawAnswer);
 
-                String nextNodeId = null;
-                String[] tokens = rawAnswer.split("\\W+");
+                String nextNodeId = agentIA.getApiTools().popNextNode();
 
-                // On vérifie si la réponse du LLM est un voisin valide
-                for (String token : tokens) {
-                    if (allNeighbors.contains(token)) {
-                        nextNodeId = token;
-                        break;
-                    }
-                }
-                if (nextNodeId != null) {
+                if (nextNodeId != null && allNeighbors.contains(nextNodeId)) {
                     // L'agent tente de se déplacer vers le nœud suggéré par l'IA
                     boolean success = myAgent.moveTo(new GsLocation(nextNodeId));
                     if (success) {
@@ -143,7 +133,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                     }
                 }
                 else {
-                    System.out.println("L'IA n'a pas renvoyé un ID valide parmi les voisins. Elle a dit : " + rawAnswer);
+                    System.out.println("/!\\ L'IA n'a pas utilisé l'outil correctement ou a proposé un noeud invalide. Elle a dit : " + rawAnswer);
 
                     // Si l'IA bug, on prend un voisin au hasard pour ne pas rester bloqué éternellement
                     if(!allNeighbors.isEmpty()){

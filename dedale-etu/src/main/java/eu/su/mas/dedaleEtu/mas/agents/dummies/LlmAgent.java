@@ -20,6 +20,7 @@ public class LlmAgent extends AbstractDedaleAgent {
     // Le composant gérant les appels API vers Ollama.
     // Transient car LangChain4j n'est pas sérialisable par JADE lors de la migration d'un conteneur à l'autre.
     private transient AgentBrain brain;
+    private transient DedaleTools apiTools;
 
     /**
      * Méthode d'initialisation appelée lors de la création de l'agent sur la plateforme.
@@ -53,7 +54,12 @@ public class LlmAgent extends AbstractDedaleAgent {
                         .logResponses(true)
                         .build();
 
-        this.brain = dev.langchain4j.service.AiServices.create(AgentBrain.class, model);
+        this.apiTools = new DedaleTools(); // On crée l'outil
+
+        this.brain = dev.langchain4j.service.AiServices.builder(AgentBrain.class)
+                .chatLanguageModel(model)
+                .tools(apiTools)
+                .build();
     }
 
     protected void takeDown(){
@@ -73,4 +79,6 @@ public class LlmAgent extends AbstractDedaleAgent {
      * Permet aux comportements (Behaviours) d'accéder à l'interface LangChain4j
      */
     public AgentBrain getBrain() { return brain; }
+
+    public DedaleTools getApiTools() { return apiTools; }
 }

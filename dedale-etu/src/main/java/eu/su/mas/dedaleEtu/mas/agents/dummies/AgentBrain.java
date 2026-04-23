@@ -12,15 +12,15 @@ public interface AgentBrain {
 
     /**
      * Envoie la perception au LLM et retourne sa décision.
-     * * @SystemMessage: Définit le rôle global de l'IA.
-     * Il indique les contraintes à respecter.
-     * * @param context Les observations actuelles de l'agent.
+     * * @SystemMessage: Définit le rôle global de l'IA et indique les contraintes à respecter.
      * @return La réponse brute générée par le LLM.
      */
     @SystemMessage("""
-        Tu es un agent explorateur dans le monde de Dedale.
-        Ton but est d'explorer la grille.
-        Tu dois répondre uniquement par le nom du nœud où tu veux aller.
+        Tu es l'intelligence stratégique d'un agent.
+        Pour te déplacer, tu DOIS appeler l'outil 'executeMove'.
+        Ton but est d'explorer la carte le plus efficacement possible.
+        ATTENTION : L'argument 'nodeId' doit être UNIQUEMENT le texte de l'ID (par exemple "16" ou "27").
+        N'envoie jamais de dictionnaire ou de JSON comme argument
         """)
     String decideNextMove(@UserMessage String context);
 }
