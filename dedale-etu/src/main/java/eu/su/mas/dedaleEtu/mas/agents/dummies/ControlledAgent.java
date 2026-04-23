@@ -1,5 +1,6 @@
 package eu.su.mas.dedaleEtu.mas.agents.dummies;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,8 @@ public class ControlledAgent extends AbstractDedaleAgent {
 
 	
 	
-	private static final long serialVersionUID = 728177281660199801L;
+	@Serial
+    private static final long serialVersionUID = 728177281660199801L;
 
 	protected void setup(){
 		super.setup();
@@ -20,8 +22,9 @@ public class ControlledAgent extends AbstractDedaleAgent {
 		final Object[] args = getArguments();
 		//use them as parameters for your behaviours 
 		
-		List<Behaviour> lb=new ArrayList<Behaviour>();
-		//lb.add(new GsControlBehaviour(this,300));
+		List<Behaviour> lb;
+        lb = new ArrayList<Behaviour>();
+        //lb.add(new GsControlBehaviour(this,300));
 		
 		addBehaviour(new StartMyBehaviours(this,lb));
 
