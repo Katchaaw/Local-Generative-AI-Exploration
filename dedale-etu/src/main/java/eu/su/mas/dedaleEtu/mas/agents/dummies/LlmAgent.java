@@ -3,9 +3,13 @@ package eu.su.mas.dedaleEtu.mas.agents.dummies;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+
+import eu.su.mas.dedale.env.EntityCharacteristics;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedale.mas.agent.behaviours.platformManagment.StartMyBehaviours;
+import eu.su.mas.dedaleEtu.mas.behaviours.ListenerBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.LlmTestBehaviour;
+import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import jade.core.behaviours.Behaviour;
 
 /**
@@ -21,16 +25,27 @@ public class LlmAgent extends AbstractDedaleAgent {
     // Transient car LangChain4j n'est pas sérialisable par JADE lors de la migration d'un conteneur à l'autre.
     private transient AgentBrain brain;
     private transient DedaleTools apiTools;
+    private MapRepresentation myMap;
 
+    private List<String> inbox = new ArrayList<>();
+    private List<String> agentList = new ArrayList<>();
+    
     /**
      * Méthode d'initialisation appelée lors de la création de l'agent sur la plateforme.
      */
     protected void setup(){
         super.setup();
         final Object[] args = getArguments();
-        eu.su.mas.dedale.env.EntityCharacteristics ec = (eu.su.mas.dedale.env.EntityCharacteristics) args[0];
 
-        List<String> userParams = ec.getUserParameters();
+        if (args != null && args.length > 0) {
+            EntityCharacteristics ec = (EntityCharacteristics) args[0];
+
+            List<String> userParams = ec.getUserParameters();
+
+            if (userParams != null && !userParams.isEmpty()) {
+                this.agentList.addAll(userParams);
+            }
+        }
 
         // Configuration du LLM local
         initializeBrain();
@@ -38,6 +53,7 @@ public class LlmAgent extends AbstractDedaleAgent {
         // Ajout du comportement d'exploration (la boucle onTick)
         List<Behaviour> lb= new ArrayList<>();
         lb.add(new LlmTestBehaviour(this));
+        lb.add(new ListenerBehaviour(this));
         addBehaviour(new StartMyBehaviours(this,lb));
     }
 
@@ -81,4 +97,20 @@ public class LlmAgent extends AbstractDedaleAgent {
     public AgentBrain getBrain() { return brain; }
 
     public DedaleTools getApiTools() { return apiTools; }
+    public void initializeMyMap(){this.myMap = new MapRepresentation(this.getLocalName());}
+    public MapRepresentation getMyMap(){return this.myMap;}
+
+    public synchronized void addMessageToInbox(String msg) {
+        this.inbox.add(msg);
+    }
+
+    public synchronized List<String> fetchInbox() {
+        List<String> messages = new ArrayList<>(inbox);
+        inbox.clear(); // On vide après lecture
+        return messages;
+    }
+
+    public List<String> getAgentList() {
+        return agentList;
+    }
 }
