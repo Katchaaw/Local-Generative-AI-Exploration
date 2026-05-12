@@ -120,14 +120,6 @@ public class LlmTestBehaviour extends TickerBehaviour {
 
             StringBuilder promptBuilder = new StringBuilder();
             promptBuilder.append("Tu es l'agent ").append(myAgent.getLocalName()).append(".\n");
-            if(this.agentIA.getLocalName().equals("OllamaBot1")){
-                System.out.println(agentIA.getLocalName() + " est le chef");
-                promptBuilder.append("Tu es le chef, tous les autres agents t'écoutent, donne des ordres pour encercler le golem. Tu seras notifier si un golem passe à cotée").append(".\n");
-
-            }
-            else{
-                promptBuilder.append("Tu dois suivre les ordres de OllamaBot1 pour réussir à encercler le golem").append(".\n");
-            }
             promptBuilder.append("Liste complète des alliés : ").append(agentIA.getAgentList()).append("\n");
             if (!observedTeammates.isEmpty()) {
                 promptBuilder.append("ALLIÉS VISIBLES : ").append(String.join(", ", observedTeammates)).append(".\n");
@@ -185,20 +177,6 @@ public class LlmTestBehaviour extends TickerBehaviour {
                 DedaleTools tools = agentIA.getApiTools();
 
                 String nextNodeId = tools.popNextNode();
-                // --- NOUVEAU CODE : SAUVETAGE REGEX ---
-                // Si l'outil n'a pas été appelé proprement, mais qu'on a une réponse texte
-                if (nextNodeId == null && rawAnswer != null) {
-                    System.out.println("Analyse du texte brut pour forcer l'extraction du mouvement...");
-                    for (String neighbor : allNeighbors) {
-                        // Cherche si le numéro du voisin apparaît de manière isolée dans le texte
-                        // Cela attrapera "executeMove(28)", "noeud 28", '"28"', etc.
-                        if (rawAnswer.matches("(?s).*\\b" + neighbor + "\\b.*")) {
-                            nextNodeId = neighbor;
-                            System.out.println("✅ [Secours Regex] Outil ignoré, mais noeud " + nextNodeId + " trouvé dans le texte !");
-                            break; // On prend le premier voisin valide trouvé
-                        }
-                    }
-                }
 
                 List<DedaleTools.PendingMessage> msgs = tools.popMessages();
                 for (DedaleTools.PendingMessage m : msgs) {
