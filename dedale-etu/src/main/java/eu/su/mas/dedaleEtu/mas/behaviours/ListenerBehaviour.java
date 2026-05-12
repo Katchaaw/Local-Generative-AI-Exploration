@@ -1,5 +1,6 @@
 package eu.su.mas.dedaleEtu.mas.behaviours;
 
+import dataStructures.serializableGraph.SerializableNode;
 import dataStructures.serializableGraph.SerializableSimpleGraph;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.LlmAgent;
@@ -55,22 +56,41 @@ public class ListenerBehaviour extends SimpleBehaviour {
         this.agent.addBehaviour(new SendMsgBehaviour(this.agent,conversation_id, "", "PONG",monoList));
     }
 
-    private void shareMapHandler(ACLMessage msg){
+    private void shareMapHandler(ACLMessage msg) {
         try {
-            this.agent.getMyMap().mergeMap((SerializableSimpleGraph<String, MapRepresentation.MapAttribute>) msg.getContentObject());
+            SerializableSimpleGraph<String, MapRepresentation.MapAttribute> receivedGraph =
+                    (SerializableSimpleGraph<String, MapRepresentation.MapAttribute>) msg.getContentObject();
+
+            this.agent.getMyMap().mergeMap(receivedGraph);
+            for (SerializableNode<String, MapRepresentation.MapAttribute> node : receivedGraph.getAllNodes()) {
+                String nodeId = node.getNodeId();
+
+                for (String neighborId : receivedGraph.getEdges(nodeId)) {
+                    this.agent.registerEdge(nodeId, neighborId);
+                }
+            }
+
         } catch (UnreadableException e) {
             System.out.println("problème de merge");
             throw new RuntimeException(e);
         }
         this.agent.addMessageToInbox("Système : Map mise à jour par " + msg.getSender().getLocalName());
     }
-    
     // TRANSMISSION AU LLM (TEXTE)
+// TRANSMISSION AU LLM (TEXTE)
     private void llmChatHandler(ACLMessage msg){
-        String text = "L'agent " + msg.getSender().getLocalName() + " dit : " + msg.getContent();
-        this.agent.addMessageToInbox(text);
-    }
+        try {
+            String messageNettoyé = (String) msg.getContentObject();
 
+            String text = "L'agent " + msg.getSender().getLocalName() + " dit : " + messageNettoyé;
+
+            this.agent.addMessageToInbox(text);
+
+        } catch (UnreadableException e) {
+            System.err.println("Erreur de lecture du message LLM-CHAT");
+            this.agent.addMessageToInbox("L'agent " + msg.getSender().getLocalName() + " dit (brut) : " + msg.getContent());
+        }
+    }
     @Override
     public boolean done() {
         return false;

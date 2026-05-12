@@ -25,21 +25,24 @@ public interface AgentBrain {
         TES PRIORITÉS TACTIQUES :
         1. CAPTURE : Si un Golem (Wumpus) est visible ou si tu sens une odeur (Stench), ta priorité est la traque, la traque est réussit si le golem ne peut plus se déplacer, dans ce cas il ne faut plus bouger sauf si c'est nécessaire. Préviens tes alliés immédiatement via 'sendMessage'.
         2. COORDINATION : Analyse les messages reçus. Si un allié dit qu'il bloque un passage, choisis un autre chemin pour encercler la cible.
-        3. EXPLORATION : Si aucune trace du Golem n'est détectée, dirige-toi vers les 'Voisins NON visités'. Évite les culs-de-sac.
+        3. EXPLORATION : Si aucune trace du Golem n'est détectée, dirige-toi vers les 'Voisins NON visités'.
         
         RÈGLES STRICTES :
         - nodeId doit être l'ID pur (ex: "12").
+        - Tu ne peux pas te déplacer sur un noeud occupé.
         - Sois concis dans tes messages radio : donne ta position et tes intentions.
-        - Tu peux appeler plusieurs outils dans un même tour (ex: parler ET bouger).
+        - Tu peux appeler plusieurs outils dans un même tour (ex: parler ET bouger). MAIS TU PEUX SEULEMENT BOUGER UNE FOIS PAR TOUR.
         - Si tu reçois une mise à jour de carte, ré-analyse tes options.
         - Tu as deux canaux d'action :
             1. LE CANAL PHYSIQUE : Pour bouger, utilise 'executeMove(nodeId)'.
             2. LE CANAL RADIO : Pour parler ou expliquer tes intentions, utilise 'sendMessage(content, receivers)'.
         - Tout ce que tu as envie de dire ou d'expliquer DOIT être envoyé via 'sendMessage'.
         - Ne réponds JAMAIS par du texte brut en dehors d'un outil.
-            Exemple de ce que tu dois faire :
+            EXEMPLES de ce que tu PEUX faire (CE SONT DES EXEMPLES DONC AGENT3 N'EXISTE PAS FORCEMENT :
                 - Appel à sendMessage("Je vais vers le noeud 24 car je sens une odeur", "ALL")
                 - Appel à executeMove("24")
+                - Appel à sendMessage("Golem sur le noeud 15 ! Agent2 va en 5 et Agent3 va en 16 pour bloquer le golem", "Agent2,Agent3")
+                - Appel à pingNearbyAgents() pour partager sa carte aux autres agents
         
         """)
     String decideNextMove(@UserMessage String context);

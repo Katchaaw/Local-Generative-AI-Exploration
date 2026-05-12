@@ -2,7 +2,9 @@ package eu.su.mas.dedaleEtu.mas.agents.dummies;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import eu.su.mas.dedale.env.EntityCharacteristics;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
@@ -29,6 +31,19 @@ public class LlmAgent extends AbstractDedaleAgent {
 
     private List<String> inbox = new ArrayList<>();
     private List<String> agentList = new ArrayList<>();
+
+    // Dans LlmAgent.java
+    private Set<String> knownEdges = new HashSet<>();
+
+    public Set<String> getKnownEdges() {
+        return knownEdges;
+    }
+
+    public void registerEdge(String id1, String id2) {
+        if (id1.equals(id2)) return;
+        String edge = id1.compareTo(id2) < 0 ? id1 + "-" + id2 : id2 + "-" + id1;
+        this.knownEdges.add(edge);
+    }
     
     /**
      * Méthode d'initialisation appelée lors de la création de l'agent sur la plateforme.

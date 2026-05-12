@@ -30,7 +30,6 @@ public class LlmTestBehaviour extends TickerBehaviour {
     // La topologie / carte Dédale
     private MapRepresentation myMap;
     // On garde une trace simplifiée des arêtes (A-B) pour alléger le prompt du LLM
-    private Set<String> knownEdges;
     private LlmAgent agentIA;
 
     /**
@@ -38,9 +37,8 @@ public class LlmTestBehaviour extends TickerBehaviour {
      * @param myagent L'agent Dédale auquel ce comportement est attaché.
      */
     public LlmTestBehaviour(final AbstractDedaleAgent myagent) {
-        super(myagent, 3000);
+        super(myagent, 10000);
         this.visitedNodes = new ArrayList<>();
-        this.knownEdges = new HashSet<>();
     }
 
     /**
@@ -97,6 +95,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                         }
                         case AGENTNAME: {
                             if (value.equalsIgnoreCase("Wumpus")) {
+                                System.out.println("golem détected debug");
                                 observedWumpusNodes.add(neighborId);
                             } else if (!value.equals(myAgent.getLocalName())) {
                                 observedTeammates.add(value + " (en " + neighborId + ")");
@@ -111,8 +110,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                     this.myMap.addEdge(myId, neighborId); // Ajout de l'arête
 
                     // Ajout à notre set d'arêtes pour le LLM (Tri alphabétique pour éviter de doubler A-B | B-A)
-                    String edge = myId.compareTo(neighborId) < 0 ? myId + "-" + neighborId : neighborId + "-" + myId;
-                    this.knownEdges.add(edge);
+                    agentIA.registerEdge(myId, neighborId);
                 }
 
                 // On sépare les voisins connus des voisins inconnus
@@ -122,7 +120,15 @@ public class LlmTestBehaviour extends TickerBehaviour {
 
             StringBuilder promptBuilder = new StringBuilder();
             promptBuilder.append("Tu es l'agent ").append(myAgent.getLocalName()).append(".\n");
-            promptBuilder.append("Liste complète des alliés connectés : ").append(agentIA.getAgentList()).append("\n");
+            if(this.agentIA.getLocalName().equals("OllamaBot1")){
+                System.out.println(agentIA.getLocalName() + " est le chef");
+                promptBuilder.append("Tu es le chef, tous les autres agents t'écoutent, donne des ordres pour encercler le golem. Tu seras notifier si un golem passe à cotée").append(".\n");
+
+            }
+            else{
+                promptBuilder.append("Tu dois suivre les ordres de OllamaBot1 pour réussir à encercler le golem").append(".\n");
+            }
+            promptBuilder.append("Liste complète des alliés : ").append(agentIA.getAgentList()).append("\n");
             if (!observedTeammates.isEmpty()) {
                 promptBuilder.append("ALLIÉS VISIBLES : ").append(String.join(", ", observedTeammates)).append(".\n");
             }
@@ -147,15 +153,20 @@ public class LlmTestBehaviour extends TickerBehaviour {
             List<String> inbox = agentIA.fetchInbox();
             if (!inbox.isEmpty()) {
                 promptBuilder.append("RADIO (Messages reçus) :\n");
-                for (String msg : inbox) promptBuilder.append("- ").append(msg).append("\n");
+                for (String msg : inbox){
+                    promptBuilder.append("- ").append(msg).append("\n");
+                    System.out.println(this.agentIA.getLocalName() + "a reçu comme message: " + msg);
+                }
             }
 
             if (!newNeighbors.isEmpty()) promptBuilder.append("Voisins NON visités (A PRIORISER si il n'y a rien à faire) : ").append(String.join(", ", newNeighbors)).append(".\n");
             if (!oldNeighbors.isEmpty()) promptBuilder.append("Voisins DEJA visités : ").append(String.join(", ", oldNeighbors)).append(".\n");
 
             // On lui donne la map de ce qu'il a déjà découvert
-            promptBuilder.append("Topologie globale découverte (Arêtes) : ").append(String.join(", ", knownEdges)).append(".\n");
-            promptBuilder.append("Décide de ton action : bouge pour explorer ou chasser, et communique avec tes alliés si nécessaire.");
+            promptBuilder.append("Topologie globale découverte (Arêtes) : ").append(String.join(", ", this.agentIA.getKnownEdges())).append(".\n");
+            promptBuilder.append("Décide de ton action : bouge pour explorer ou chasser (encercler le golem), et communique avec tes alliés si nécessaire. TU DOIS OBLIGATOIREMENT UTILISER UN OUTIL POUR TE DÉPLACER. INTERDICTION ABSOLUE D'ÉCRIRE DU TEXTE LIBRE. NE GÉNÈRE QUE L'APPEL DE LA FONCTION.\n");
+            promptBuilder.append("RÈGLE STRICTE : Tu ne peux te déplacer QUE sur une case adjacente. Choisis UNE SEULE destination parmi cette liste exacte : ").append(String.join(", ", allNeighbors)).append(".\n");
+            promptBuilder.append("RÈGLE DE SÉCURITÉ ABSOLUE : Si la mention '!!! CIBLE EN VUE !!!' n'apparaît pas dans tes observations actuelles, le Golem n'est PAS là. Tu as INTERDICTION STRICTE d'en parler, d'imaginer des plans d'encerclement ou de faire semblant de l'avoir vu dans tes messages. Contente-toi d'explorer.\n");
             
             String prompt = promptBuilder.toString();
             System.out.println(myAgent.getLocalName() + " demande à Ollama...");
@@ -174,6 +185,20 @@ public class LlmTestBehaviour extends TickerBehaviour {
                 DedaleTools tools = agentIA.getApiTools();
 
                 String nextNodeId = tools.popNextNode();
+                // --- NOUVEAU CODE : SAUVETAGE REGEX ---
+                // Si l'outil n'a pas été appelé proprement, mais qu'on a une réponse texte
+                if (nextNodeId == null && rawAnswer != null) {
+                    System.out.println("Analyse du texte brut pour forcer l'extraction du mouvement...");
+                    for (String neighbor : allNeighbors) {
+                        // Cherche si le numéro du voisin apparaît de manière isolée dans le texte
+                        // Cela attrapera "executeMove(28)", "noeud 28", '"28"', etc.
+                        if (rawAnswer.matches("(?s).*\\b" + neighbor + "\\b.*")) {
+                            nextNodeId = neighbor;
+                            System.out.println("✅ [Secours Regex] Outil ignoré, mais noeud " + nextNodeId + " trouvé dans le texte !");
+                            break; // On prend le premier voisin valide trouvé
+                        }
+                    }
+                }
 
                 List<DedaleTools.PendingMessage> msgs = tools.popMessages();
                 for (DedaleTools.PendingMessage m : msgs) {

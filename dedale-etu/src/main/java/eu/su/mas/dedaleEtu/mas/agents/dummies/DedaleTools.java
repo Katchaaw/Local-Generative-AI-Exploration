@@ -20,12 +20,12 @@ public class DedaleTools {
         public PendingMessage(String r, String c) { this.receivers = r; this.content = c; }
     }
     
-    @Tool("Envoie un signal pour détecter les agents aux alentours et synchroniser la carte.")
+    @Tool("Envoie un signal pour détecter les agents aux alentours et synchroniser la carte (A envoyer périodiquement).")
     public String pingNearbyAgents() {
         this.pingRequested = true;
         return "Signal de synchronisation envoyé.";
     }
-    @Tool("Envoie un message. Tu peux cibler des agents précis ou tout le monde. NE PAS PING ICI")
+    @Tool("Envoie un message. Tu peux cibler des agents précis ou tout le monde. Cette fonction te permet de communiquer avec les autres agents. NE PAS PING ICI")
     public String sendMessage(
             @P("Le contenu du message") String content,
             @P("Destinataires : 'ALL' pour broadcast, ou noms séparés par virgules (ex: 'Agent1, Agent3')") String receivers
@@ -47,9 +47,11 @@ public class DedaleTools {
      */
     @Tool("Déplace l'agent vers un noeud voisin.")
     public String executeMove(@P("ID du noeud (exemple: '16')") String nodeId){
-        System.out.println(" [API Dédale] Le LLM à appelé la fonction executeMove avec l'ID : " + nodeId);
-        this.nextNodeToVisit = nodeId;
-        return "Ordre reçu.";
+        if (this.nextNodeToVisit == null) {
+            this.nextNodeToVisit = nodeId;
+            return "Ordre reçu.";
+        }
+        return "Erreur : Tu as déjà décidé de bouger ce tour-ci.";
     }
 
     /**
