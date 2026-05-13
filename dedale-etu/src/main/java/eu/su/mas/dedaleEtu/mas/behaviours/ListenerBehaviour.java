@@ -74,7 +74,7 @@ public class ListenerBehaviour extends SimpleBehaviour {
             System.out.println("problème de merge");
             throw new RuntimeException(e);
         }
-        this.agent.addMessageToInbox("Système : Map mise à jour par " + msg.getSender().getLocalName());
+        this.agent.addMessageToInbox("Map updated by: " + msg.getSender().getLocalName());
     }
     // TRANSMISSION AU LLM (TEXTE)
 // TRANSMISSION AU LLM (TEXTE)
@@ -82,13 +82,13 @@ public class ListenerBehaviour extends SimpleBehaviour {
         try {
             String messageNettoyé = (String) msg.getContentObject();
 
-            String text = "L'agent " + msg.getSender().getLocalName() + " dit : " + messageNettoyé;
+            String text = "The agent" + msg.getSender().getLocalName() + " says : " + messageNettoyé;
 
             this.agent.addMessageToInbox(text);
 
         } catch (UnreadableException e) {
             System.err.println("Erreur de lecture du message LLM-CHAT");
-            this.agent.addMessageToInbox("L'agent " + msg.getSender().getLocalName() + " dit (brut) : " + msg.getContent());
+            this.agent.addMessageToInbox("The agent says " + msg.getSender().getLocalName() + " says (raw) : " + msg.getContent());
         }
     }
     @Override

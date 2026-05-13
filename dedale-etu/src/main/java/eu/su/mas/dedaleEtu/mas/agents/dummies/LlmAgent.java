@@ -80,8 +80,10 @@ public class LlmAgent extends AbstractDedaleAgent {
         dev.langchain4j.model.ollama.OllamaChatModel model =
                 dev.langchain4j.model.ollama.OllamaChatModel.builder()
                         .baseUrl("http://localhost:11434")
-                        .modelName("llama3.2:3b")        
-                        .logRequests(true) // true pour debug, false sinon
+                        .modelName("llama3.2:3b")
+                        .timeout(java.time.Duration.ofSeconds(3))
+                        .numPredict(150)
+                        .logRequests(true)
                         .logResponses(true)
                         .build();
 

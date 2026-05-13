@@ -37,7 +37,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
      * @param myagent L'agent Dédale auquel ce comportement est attaché.
      */
     public LlmTestBehaviour(final AbstractDedaleAgent myagent) {
-        super(myagent, 10000);
+        super(myagent, 3);
         this.visitedNodes = new ArrayList<>();
     }
 
@@ -72,7 +72,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
             // Perception → On récupère les informations sur la position actuelle et les nœuds adjacents.
             List<Couple<Location, List<Couple<Observation, String>>>> lobs = myAgent.observe();
             Map<String, Integer> stenchCounts = new HashMap<>();
-            List<String> observedWumpusNodes = new ArrayList<>(); 
+            List<String> observedWumpusNodes = new ArrayList<>();
             List<String> observedTeammates = new ArrayList<>();
 
 
@@ -84,7 +84,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                 String neighborId = c.getLeft().getLocationId();
                 allNeighbors.add(neighborId);
                 List<Couple<Observation, String>> nodeObservations = c.getRight();
-                
+
                 for (Couple<Observation, String> o : nodeObservations) {
                     Observation type = o.getLeft();
                     String value = o.getRight();
@@ -95,10 +95,9 @@ public class LlmTestBehaviour extends TickerBehaviour {
                         }
                         case AGENTNAME: {
                             if (value.equalsIgnoreCase("Wumpus")) {
-                                System.out.println("golem détected debug");
                                 observedWumpusNodes.add(neighborId);
                             } else if (!value.equals(myAgent.getLocalName())) {
-                                observedTeammates.add(value + " (en " + neighborId + ")");
+                                observedTeammates.add(value + " (at " + neighborId + ")");
                             }
                             break;
                         }
@@ -119,49 +118,55 @@ public class LlmTestBehaviour extends TickerBehaviour {
             }
 
             StringBuilder promptBuilder = new StringBuilder();
-            promptBuilder.append("Tu es l'agent ").append(myAgent.getLocalName()).append(".\n");
-            promptBuilder.append("Liste complète des alliés : ").append(agentIA.getAgentList()).append("\n");
+            promptBuilder.append("You are agent ").append(myAgent.getLocalName()).append(".\n");
+            promptBuilder.append("You are on node ").append(myPosition.getLocationId()).append(".\n");
+            promptBuilder.append("Full list of allies: ").append(agentIA.getAgentList()).append("\n");
+            promptBuilder.append("VISIBLE ALLIES: ").append(".\n");
+
             if (!observedTeammates.isEmpty()) {
-                promptBuilder.append("ALLIÉS VISIBLES : ").append(String.join(", ", observedTeammates)).append(".\n");
+                promptBuilder.append("VISIBLE ALLIES: ").append(String.join(", ", observedTeammates)).append(".\n");
+            }
+            else{
+                promptBuilder.append("No visible ally ").append(".\n");
             }
             if (!observedWumpusNodes.isEmpty()) {
-                promptBuilder.append("!!! CIBLE EN VUE !!! Golem(s) détecté(s) sur : ").append(String.join(", ", observedWumpusNodes)).append(".\n");
+                promptBuilder.append("!!! TARGET IN SIGHT !!! Golem(s) detected on: ").append(String.join(", ", observedWumpusNodes)).append(".\n");
+                promptBuilder.append("Warn allies immediately via 'sendMessage' and make a plan to block it. ").append(".\n");
+
             }
             if (!stenchCounts.isEmpty()) {
-                promptBuilder.append("--- ANALYSE DES ODEURS (STENCH) ---\n");
+                promptBuilder.append("--- STENCH ANALYSIS ---\n");
                 for (Map.Entry<String, Integer> entry : stenchCounts.entrySet()) {
                     int count = entry.getValue();
                     String node = entry.getKey();
                     if (count > 1) {
-                        promptBuilder.append("- Le noeud ").append(node)
-                                .append(" sent TRES FORT (").append(count).append(" odeurs).\n");
+                        promptBuilder.append("- Node ").append(node)
+                                .append(" smells VERY STRONG (").append(count).append(" odors).\n");
                     } else {
-                        promptBuilder.append("- Le noeud ").append(node).append(" a une odeur suspecte.\n");
+                        promptBuilder.append("- Node ").append(node).append(" has a suspicious smell.\n");
                     }
                 }
             }
-            promptBuilder.append("Tu es sur le noeud ").append(myPosition.getLocationId()).append(".\n");
-
             List<String> inbox = agentIA.fetchInbox();
             if (!inbox.isEmpty()) {
-                promptBuilder.append("RADIO (Messages reçus) :\n");
+                promptBuilder.append("RADIO (Messages received):\n");
                 for (String msg : inbox){
                     promptBuilder.append("- ").append(msg).append("\n");
-                    System.out.println(this.agentIA.getLocalName() + "a reçu comme message: " + msg);
+                    System.out.println(this.agentIA.getLocalName() + " received message: " + msg);
                 }
             }
 
-            if (!newNeighbors.isEmpty()) promptBuilder.append("Voisins NON visités (A PRIORISER si il n'y a rien à faire) : ").append(String.join(", ", newNeighbors)).append(".\n");
-            if (!oldNeighbors.isEmpty()) promptBuilder.append("Voisins DEJA visités : ").append(String.join(", ", oldNeighbors)).append(".\n");
+            if (!newNeighbors.isEmpty()) promptBuilder.append("UNVISITED neighbors (PRIORITIZE if there is nothing to do): ").append(String.join(", ", newNeighbors)).append(".\n");
+            if (!oldNeighbors.isEmpty()) promptBuilder.append("ALREADY visited neighbors: ").append(String.join(", ", oldNeighbors)).append(".\n");
 
             // On lui donne la map de ce qu'il a déjà découvert
-            promptBuilder.append("Topologie globale découverte (Arêtes) : ").append(String.join(", ", this.agentIA.getKnownEdges())).append(".\n");
-            promptBuilder.append("Décide de ton action : bouge pour explorer ou chasser (encercler le golem), et communique avec tes alliés si nécessaire. TU DOIS OBLIGATOIREMENT UTILISER UN OUTIL POUR TE DÉPLACER. INTERDICTION ABSOLUE D'ÉCRIRE DU TEXTE LIBRE. NE GÉNÈRE QUE L'APPEL DE LA FONCTION.\n");
-            promptBuilder.append("RÈGLE STRICTE : Tu ne peux te déplacer QUE sur une case adjacente. Choisis UNE SEULE destination parmi cette liste exacte : ").append(String.join(", ", allNeighbors)).append(".\n");
-            promptBuilder.append("RÈGLE DE SÉCURITÉ ABSOLUE : Si la mention '!!! CIBLE EN VUE !!!' n'apparaît pas dans tes observations actuelles, le Golem n'est PAS là. Tu as INTERDICTION STRICTE d'en parler, d'imaginer des plans d'encerclement ou de faire semblant de l'avoir vu dans tes messages. Contente-toi d'explorer.\n");
-            
+            promptBuilder.append("Global topology discovered (Edges): ").append(String.join(", ", this.agentIA.getKnownEdges())).append(".\n");
+            promptBuilder.append("Decide on your action: move to explore or hunt (encircle the golem), and communicate with your allies if necessary. YOU MUST MANDATORILY USE A TOOL TO MOVE. ABSOLUTE PROHIBITION TO WRITE FREE TEXT. ONLY GENERATE THE FUNCTION CALL.\n");
+            promptBuilder.append("STRICT RULE: You can ONLY move to an adjacent node. You can ONLY MOVE ONCE THIS TURN AND CANT BUFFER YOUR NEXT MOVES. Choose ONLY ONE destination from this exact list: ").append(String.join(", ", allNeighbors)).append(".\n");
+            promptBuilder.append("ABSOLUTE SECURITY RULE: If the mention '!!! TARGET IN SIGHT !!!' does not appear in your current observations, the Golem is NOT there. You are STRICTLY FORBIDDEN from talking about it, imagining encirclement plans, or pretending to have seen it in your messages. Just stick to exploring.\n");
+
             String prompt = promptBuilder.toString();
-            System.out.println(myAgent.getLocalName() + " demande à Ollama...");
+            System.out.println(myAgent.getLocalName() + " requesting LLM...");
 
             try {
                 // Chronomètre pour études de temps
@@ -173,7 +178,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                 long endTime = System.currentTimeMillis();
                 long duration = endTime - startTime;
 
-                System.out.println("Temps de réponse LLM : " + duration + " ms");
+                System.out.println("LLM response time: " + duration + " ms");
                 DedaleTools tools = agentIA.getApiTools();
 
                 String nextNodeId = tools.popNextNode();
@@ -190,24 +195,24 @@ public class LlmTestBehaviour extends TickerBehaviour {
                     // L'agent tente de se déplacer vers le nœud suggéré par l'IA
                     boolean success = myAgent.moveTo(new GsLocation(nextNodeId));
                     if (success) {
-                        System.out.println("Déplacement réussi vers " + nextNodeId);
+                        System.out.println("Move successful to " + nextNodeId);
                     }
                     else {
-                        System.out.println("Échec du déplacement. L'IA a peut-être donné un ID inexistant.");
+                        System.out.println("Move failed. The AI might have provided a non-existent ID.");
                     }
                 }
                 else {
-                    System.out.println("/!\\ L'IA n'a pas utilisé l'outil correctement ou a proposé un noeud invalide. Elle a dit : " + rawAnswer);
+                    System.out.println("/!\\ The AI did not use the tool correctly or proposed an invalid node. It said: " + rawAnswer);
 
                     // Si l'IA bug, on prend un voisin au hasard pour ne pas rester bloqué éternellement
                     if(!allNeighbors.isEmpty()){
-                        String fallbackNode = newNeighbors.isEmpty() ? oldNeighbors.getFirst() : newNeighbors.getFirst();
-                        System.out.println("Mouvement de secours vers : " + fallbackNode);
+                        String fallbackNode = newNeighbors.isEmpty() ? oldNeighbors.get(0) : newNeighbors.get(0);
+                        System.out.println("Emergency fallback move to: " + fallbackNode);
                         myAgent.moveTo(new GsLocation(fallbackNode));
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Erreur LLM : " + e.getMessage());
+                System.err.println("LLM Error: " + e.getMessage());
             }
         }
     }
@@ -216,7 +221,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
         if (m == null || m.content == null || m.content.isEmpty()) return;
 
         List<String> finalReceivers = new ArrayList<>();
-        
+
         if (m.receivers == null || m.receivers.equalsIgnoreCase("ALL")) {
             finalReceivers = this.agentIA.getAgentList();
         } else {

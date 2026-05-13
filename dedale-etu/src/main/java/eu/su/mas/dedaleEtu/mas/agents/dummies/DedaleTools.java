@@ -11,27 +11,27 @@ public class DedaleTools {
     private String nextNode = null;
     private boolean pingRequested = false; // Flag pour le Ping
 
-    /** 
-     * Structure interne pour stocker le couple (Destinataire, Message)
+    /** * Structure interne pour stocker le couple (Destinataire, Message)
      */
     public static class PendingMessage {
         public String receivers; // "ALL" ou "Agent1,Agent2"
         public String content;
         public PendingMessage(String r, String c) { this.receivers = r; this.content = c; }
     }
-    
-    @Tool("Envoie un signal pour détecter les agents aux alentours et synchroniser la carte (A envoyer périodiquement).")
+
+    @Tool("Sends a signal to detect nearby agents and synchronize map data. Use this periodically to share your discovered topology with allies.")
     public String pingNearbyAgents() {
         this.pingRequested = true;
-        return "Signal de synchronisation envoyé.";
+        return "Synchronization signal sent.";
     }
-    @Tool("Envoie un message. Tu peux cibler des agents précis ou tout le monde. Cette fonction te permet de communiquer avec les autres agents. NE PAS PING ICI")
+
+    @Tool("Sends a radio message to communicate with other agents. You can target specific agents or broadcast to everyone. DO NOT use this for map synchronization.")
     public String sendMessage(
-            @P("Le contenu du message") String content,
-            @P("Destinataires : 'ALL' pour broadcast, ou noms séparés par virgules (ex: 'Agent1, Agent3')") String receivers
+            @P("The textual content of the message.") String content,
+            @P("Recipient(s): Use 'ALL' for broadcast, or specific names separated by commas (e.g., 'OllamaBot1, OllamaBot3').") String receivers
     ){
         this.messagesQueue.add(new PendingMessage(receivers, content));
-        return "Message enregistré pour " + receivers;
+        return "Message queued for " + receivers;
     }
 
     public List<PendingMessage> popMessages() {
@@ -45,13 +45,13 @@ public class DedaleTools {
      * L'annotation @Tool génère la documentation de la méthode que le LLM va lire.
      * L'annotation @Tool génère la documentation de l'argument de la fonction que le LLM va lire.
      */
-    @Tool("Déplace l'agent vers un noeud voisin.")
-    public String executeMove(@P("ID du noeud (exemple: '16')") String nodeId){
+    @Tool("Moves the agent to an adjacent neighbor node. Destination must be a valid adjacent node from your current observations.")
+    public String executeMove(@P("The unique ID of the target node (e.g., '16').") String nodeId){
         if (this.nextNodeToVisit == null) {
             this.nextNodeToVisit = nodeId;
-            return "Ordre reçu.";
+            return "Movement order received.";
         }
-        return "Erreur : Tu as déjà décidé de bouger ce tour-ci.";
+        return "Error: You have already decided to move this turn.";
     }
 
     /**
