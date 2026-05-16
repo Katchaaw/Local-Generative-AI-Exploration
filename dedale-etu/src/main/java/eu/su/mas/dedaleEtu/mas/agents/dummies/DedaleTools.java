@@ -9,29 +9,42 @@ public class DedaleTools {
     private String nextNodeToVisit = null;
     private List<PendingMessage> messagesQueue = new ArrayList<>();
     private String nextNode = null;
-    private boolean pingRequested = false; // Flag pour le Ping
+    private boolean pingRequested = false; 
 
+    private String agentName; //pour debug...
+    
     /** * Structure interne pour stocker le couple (Destinataire, Message)
      */
     public static class PendingMessage {
-        public String receivers; // "ALL" ou "Agent1,Agent2"
+        public String receivers; // "ALL" ou "Agent1,Agent2" -> ALL seulement, Ollama n'y arrive pas sinon...oskour
         public String content;
         public PendingMessage(String r, String c) { this.receivers = r; this.content = c; }
+    }
+    
+    public DedaleTools(String agentName){
+        this.agentName = agentName;
     }
 
     @Tool("Sends a signal to detect nearby agents and synchronize map data. Use this periodically to share your discovered topology with allies.")
     public String pingNearbyAgents() {
+        System.out.println(this.agentName +  ": appel à pingNearbyAgents");
         this.pingRequested = true;
         return "Synchronization signal sent.";
     }
 
-    @Tool("Sends a radio message to communicate with other agents. You can target specific agents or broadcast to everyone. DO NOT use this for map synchronization.")
+    @Tool("Sends a boradcast message to communicate with other agents. DO NOT use this for map synchronization.")
     public String sendMessage(
-            @P("The textual content of the message.") String content,
-            @P("Recipient(s): Use 'ALL' for broadcast, or specific names separated by commas (e.g., 'OllamaBot1, OllamaBot3').") String receivers
+            @P("The textual content of the message.") String content
     ){
-        this.messagesQueue.add(new PendingMessage(receivers, content));
-        return "Message queued for " + receivers;
+        System.out.println(agentName +  ": appel à sendMessage. Message envoyé: " + content + " à ");
+
+        if (!this.messagesQueue.isEmpty()) {
+            throw new AssertionError("Anti-spam: Only ONE message allowed per turn. Loop broken.");
+        }
+        
+
+        this.messagesQueue.add(new PendingMessage("ALL", content));
+        return "Message queued successfully !";
     }
 
     public List<PendingMessage> popMessages() {
@@ -47,11 +60,17 @@ public class DedaleTools {
      */
     @Tool("Moves the agent to an adjacent neighbor node. Destination must be a valid adjacent node from your current observations.")
     public String executeMove(@P("The unique ID of the target node (e.g., '16').") String nodeId){
+        System.out.println(agentName +  ": appel à executeMove");
         if (this.nextNodeToVisit == null) {
             this.nextNodeToVisit = nodeId;
             return "Movement order received.";
         }
         return "Error: You have already decided to move this turn.";
+    }
+    @Tool("Call this tool ONLY when you are done with your turn and have no more actions to take.")
+    public String finishTurn() {
+        System.out.println(agentName +  ": appel à finish");
+        return "Turn finalized successfully. Stop generating!.";
     }
 
     /**

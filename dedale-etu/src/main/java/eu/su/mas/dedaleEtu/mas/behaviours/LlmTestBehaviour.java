@@ -37,7 +37,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
      * @param myagent L'agent Dédale auquel ce comportement est attaché.
      */
     public LlmTestBehaviour(final AbstractDedaleAgent myagent) {
-        super(myagent, 3);
+        super(myagent, 3000);
         this.visitedNodes = new ArrayList<>();
     }
 
@@ -161,11 +161,13 @@ public class LlmTestBehaviour extends TickerBehaviour {
 
             // On lui donne la map de ce qu'il a déjà découvert
             promptBuilder.append("Global topology discovered (Edges): ").append(String.join(", ", this.agentIA.getKnownEdges())).append(".\n");
-            promptBuilder.append("Decide on your action: move to explore or hunt (encircle the golem), and communicate with your allies if necessary. YOU MUST MANDATORILY USE A TOOL TO MOVE. ABSOLUTE PROHIBITION TO WRITE FREE TEXT. ONLY GENERATE THE FUNCTION CALL.\n");
-            promptBuilder.append("STRICT RULE: You can ONLY move to an adjacent node. You can ONLY MOVE ONCE THIS TURN AND CANT BUFFER YOUR NEXT MOVES. Choose ONLY ONE destination from this exact list: ").append(String.join(", ", allNeighbors)).append(".\n");
-            promptBuilder.append("ABSOLUTE SECURITY RULE: If the mention '!!! TARGET IN SIGHT !!!' does not appear in your current observations, the Golem is NOT there. You are STRICTLY FORBIDDEN from talking about it, imagining encirclement plans, or pretending to have seen it in your messages. Just stick to exploring.\n");
+            promptBuilder.append("Decide on your action: move to explore or hunt (encircle the golem), and communicate with your allies if necessary.\n");
+            promptBuilder.append("Choose ONLY ONE destination from this exact list: ").append(String.join(", ", allNeighbors)).append(".\n");
 
             String prompt = promptBuilder.toString();
+            System.out.println("\n====================== PROMPT START ======================");
+            System.out.println(prompt);
+            System.out.println("======================= PROMPT END =======================\n");
             System.out.println(myAgent.getLocalName() + " requesting LLM...");
 
             try {
@@ -227,7 +229,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
         } else {
             String[] parts = m.receivers.split(",");
             for (String p : parts) {
-                String cleanName = p.trim(); // Supprime les espaces avant/après
+                String cleanName = p.trim();
                 if (!cleanName.isEmpty()) {
                     finalReceivers.add(cleanName);
                 }
@@ -236,7 +238,6 @@ public class LlmTestBehaviour extends TickerBehaviour {
 
         if (!finalReceivers.isEmpty()) {
             String convId = "chat-" + System.currentTimeMillis();
-            // On ajoute le comportement d'envoi avec la liste propre
             myAgent.addBehaviour(new SendMsgBehaviour(
                     (AbstractDedaleAgent) myAgent,
                     convId,

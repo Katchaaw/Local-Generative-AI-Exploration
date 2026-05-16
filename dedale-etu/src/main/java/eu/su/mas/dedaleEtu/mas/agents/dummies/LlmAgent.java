@@ -79,15 +79,13 @@ public class LlmAgent extends AbstractDedaleAgent {
     private void initializeBrain() {
         dev.langchain4j.model.ollama.OllamaChatModel model =
                 dev.langchain4j.model.ollama.OllamaChatModel.builder()
-                        .baseUrl("http://localhost:11434")
+                        .baseUrl("http://127.0.0.1:11434")
                         .modelName("llama3.2:3b")
-                        .timeout(java.time.Duration.ofSeconds(3))
-                        .numPredict(150)
-                        .logRequests(true)
-                        .logResponses(true)
+                        .logRequests(false)
+                        .logResponses(false)
                         .build();
 
-        this.apiTools = new DedaleTools(); // On crée l'outil
+        this.apiTools = new DedaleTools(this.getLocalName()); // On crée l'outil
 
         this.brain = dev.langchain4j.service.AiServices.builder(AgentBrain.class)
                 .chatLanguageModel(model)

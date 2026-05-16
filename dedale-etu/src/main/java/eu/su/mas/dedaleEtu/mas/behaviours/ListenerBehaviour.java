@@ -27,7 +27,6 @@ public class ListenerBehaviour extends SimpleBehaviour {
 
     @Override
     public void action(){
-        // On boucle tant qu'il y a des messages dans la file
         ACLMessage msgReceived;
         while ((msgReceived = this.myAgent.receive(this.template)) != null) {
             String protocol = msgReceived.getProtocol();
@@ -76,7 +75,7 @@ public class ListenerBehaviour extends SimpleBehaviour {
         }
         this.agent.addMessageToInbox("Map updated by: " + msg.getSender().getLocalName());
     }
-    // TRANSMISSION AU LLM (TEXTE)
+    
 // TRANSMISSION AU LLM (TEXTE)
     private void llmChatHandler(ACLMessage msg){
         try {

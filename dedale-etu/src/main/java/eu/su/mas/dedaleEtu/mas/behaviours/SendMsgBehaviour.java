@@ -23,7 +23,6 @@ public class SendMsgBehaviour extends OneShotBehaviour {
         this.content = msg;
         this.protocol = protocol;
         this.receivers = receivers;
-        if(msg instanceof String) System.out.println((String) msg);
     }
 
     @Override
