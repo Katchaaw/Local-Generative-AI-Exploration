@@ -1,6 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.behaviours;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.List;
 
 import dataStructures.serializableGraph.SerializableSimpleGraph;
@@ -46,7 +47,8 @@ public class ShareMapBehaviour extends TickerBehaviour{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -568863390879327961L;
+	@Serial
+    private static final long serialVersionUID = -568863390879327961L;
 
 	@Override
 	protected void onTick() {

@@ -5,6 +5,7 @@ import eu.su.mas.dedaleEtu.mas.utils.MessageFactory;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class SendMsgBehaviour extends OneShotBehaviour {
     List<String> receivers;
     String conversation_id;
 
+    @Serial
     private static final long serialVersionUID = 8567689731896717661L;
 
 

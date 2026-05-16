@@ -1,5 +1,6 @@
 package eu.su.mas.dedaleEtu.mas.agents.dummies.explo;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +37,8 @@ import jade.core.behaviours.Behaviour;
 
 public class ExploreCoopAgent extends AbstractDedaleAgent {
 
-	private static final long serialVersionUID = -7969469610241668140L;
+	@Serial
+    private static final long serialVersionUID = -7969469610241668140L;
 	private MapRepresentation myMap;
 
 

@@ -33,7 +33,7 @@ public class DedaleTools {
     }
 
     @Tool("Sends a boradcast message to communicate with other agents. DO NOT use this for map synchronization.")
-    public String sendMessage(
+        public String sendMessage(
             @P("The textual content of the message.") String content
     ){
         System.out.println(agentName +  ": appel à sendMessage. Message envoyé: " + content + " à ");
@@ -60,7 +60,7 @@ public class DedaleTools {
      */
     @Tool("Moves the agent to an adjacent neighbor node. Destination must be a valid adjacent node from your current observations.")
     public String executeMove(@P("The unique ID of the target node (e.g., '16').") String nodeId){
-        System.out.println(agentName +  ": appel à executeMove");
+        System.out.println(agentName +  ": appel à executeMove avec l'ID " + nodeId);
         if (this.nextNodeToVisit == null) {
             this.nextNodeToVisit = nodeId;
             return "Movement order received.";

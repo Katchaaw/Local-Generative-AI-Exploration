@@ -45,7 +45,7 @@ public class ListenerBehaviour extends SimpleBehaviour {
     private void pongHandler(ACLMessage msg){
         String conv_id = msg.getConversationId();
         String sender_id = msg.getSender().getLocalName();
-        SerializableSimpleGraph sg = this.agent.getMyMap().getSerializableGraph();
+        SerializableSimpleGraph<String, MapRepresentation.MapAttribute> sg = this.agent.getMyMap().getSerializableGraph();
         this.myAgent.addBehaviour(new SendMsgBehaviour((AbstractDedaleAgent)myAgent, conv_id, sg, "SHARE-MAP", List.of(sender_id)));
     }
     private void pingHandler(ACLMessage msg){
@@ -79,9 +79,9 @@ public class ListenerBehaviour extends SimpleBehaviour {
 // TRANSMISSION AU LLM (TEXTE)
     private void llmChatHandler(ACLMessage msg){
         try {
-            String messageNettoyé = (String) msg.getContentObject();
+            String messageClean = (String) msg.getContentObject();
 
-            String text = "The agent" + msg.getSender().getLocalName() + " says : " + messageNettoyé;
+            String text = "The agent" + msg.getSender().getLocalName() + " says : " + messageClean;
 
             this.agent.addMessageToInbox(text);
 

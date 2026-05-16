@@ -12,7 +12,6 @@ import eu.su.mas.dedaleEtu.mas.agents.dummies.DedaleTools;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.LlmAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import jade.core.behaviours.TickerBehaviour;
-import jade.lang.acl.ACLMessage;
 
 /**
  * TickerBehaviour de l'agent IA.
@@ -190,7 +189,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                     sendLlmMessage(m);
                 }
                 if (tools.popPing()) {
-                    agentIA.addBehaviour(new SendMsgBehaviour((AbstractDedaleAgent) myAgent, "", "", "PING", agentIA.getAgentList()));
+                    agentIA.addBehaviour(new SendMsgBehaviour(myAgent, "", "", "PING", agentIA.getAgentList()));
                 }
 
                 if (nextNodeId != null && allNeighbors.contains(nextNodeId)) {
@@ -208,7 +207,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
 
                     // Si l'IA bug, on prend un voisin au hasard pour ne pas rester bloqué éternellement
                     if(!allNeighbors.isEmpty()){
-                        String fallbackNode = newNeighbors.isEmpty() ? oldNeighbors.get(0) : newNeighbors.get(0);
+                        String fallbackNode = newNeighbors.isEmpty() ? oldNeighbors.getFirst() : newNeighbors.getFirst();
                         System.out.println("Emergency fallback move to: " + fallbackNode);
                         myAgent.moveTo(new GsLocation(fallbackNode));
                     }
