@@ -22,6 +22,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
 
     @Serial
     private static final long serialVersionUID = -7646778536966020439L;
+    private int turnCount = 0;
 
     // Mémoire de l'agent
     private List<String> visitedNodes;
@@ -49,6 +50,8 @@ public class LlmTestBehaviour extends TickerBehaviour {
         // Cast des références pour accéder aux méthodes de l'agent
         AbstractDedaleAgent myAgent = (AbstractDedaleAgent) this.myAgent;
         agentIA = (LlmAgent) this.myAgent;
+
+        this.turnCount++;
 
         // Initialisation de la carte
         if (agentIA.getMyMap() == null){
@@ -178,6 +181,16 @@ public class LlmTestBehaviour extends TickerBehaviour {
 
                 long endTime = System.currentTimeMillis();
                 long duration = endTime - startTime;
+
+                // Logger
+                boolean isHunting = prompt.contains("TARGET IN SIGHT");
+                int knownEdgesCount = this.myMap.getEdgeCount(); // Pour voir si la taille de la map impacte le temps
+                String modelUsed = "llama3.2:3b"; // Ou dynamique si tu le récupères
+                String actionType = (rawAnswer.contains("executeMove")) ? "MOVE" : "OTHER";
+
+                eu.su.mas.dedaleEtu.mas.utils.MetricsLogger.logTurn(
+                        myAgent.getLocalName(), this.turnCount, modelUsed, knownEdgesCount, duration, actionType, isHunting
+                );
 
                 System.out.println("LLM response time: " + duration + " ms");
                 DedaleTools tools = agentIA.getApiTools();

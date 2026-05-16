@@ -58,9 +58,12 @@ public class DedaleTools {
      * L'annotation @Tool génère la documentation de la méthode que le LLM va lire.
      * L'annotation @Tool génère la documentation de l'argument de la fonction que le LLM va lire.
      */
-    @Tool("Moves the agent to an adjacent neighbor node. Destination must be a valid adjacent node from your current observations.")
-    public String executeMove(@P("The unique ID of the target node (e.g., '16').") String nodeId){
-        System.out.println(agentName +  ": appel à executeMove avec l'ID " + nodeId);
+    @Tool("Moves the agent to an adjacent node. You MUST provide a short rationale for your choice.")
+    public String executeMove(
+            @P("The unique ID of the target node (e.g., '16').") String nodeId,
+            @P("A 1-sentence explanation of WHY you chose this node.") String rationale) {    System.out.println(agentName +  ": appel à executeMove avec l'ID " + nodeId);
+        System.out.println(agentName +  ": appel à executeMove vers " + nodeId + " | Raison : " + rationale);
+
         if (this.nextNodeToVisit == null) {
             this.nextNodeToVisit = nodeId;
             return "Movement order received.";

@@ -92,6 +92,8 @@ public final class ConfigurationFile {
 	//public static String INSTANCE_TOPOLOGY="resources/topology/map2022-topologyExam-V2b.dgs";
 	//public static String INSTANCE_TOPOLOGY="resources/map2019-topologyExam1";
 
+    //public static String INSTANCE_TOPOLOGY="resources/topology/BinaryTree2";
+
 
 	
 	/**
@@ -171,7 +173,9 @@ public final class ConfigurationFile {
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agent-2explo-1human.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/gemini.json";
 	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/OllamaBot.json";
-	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agent-2-explo-coop.json";
+    //public static String INSTANCE_CONFIGURATION_ENTITIES="resources/SingleLLM.json";
+    //public static String INSTANCE_CONFIGURATION_ENTITIES="resources/TwoLLM.json";
+    //public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agent-2-explo-coop.json";
 
 
 
