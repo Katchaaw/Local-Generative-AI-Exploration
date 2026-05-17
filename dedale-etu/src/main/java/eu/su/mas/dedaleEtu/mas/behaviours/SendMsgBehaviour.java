@@ -9,16 +9,38 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * Comportement à exécution unique ({@link OneShotBehaviour}) dédié à l'expédition asynchrone de messages.
+ * <p>
+ * Ce comportement encapsule la logique de composition et d'envoi d'un message réseau JADE.
+ * </p>
+ */
 public class SendMsgBehaviour extends OneShotBehaviour {
-    Serializable content;
-    String protocol;
-    List<String> receivers;
-    String conversation_id;
 
     @Serial
     private static final long serialVersionUID = 8567689731896717661L;
 
+    /** Charge utile */
+    private final Serializable content;
 
+    /** Protocole */
+    private final String protocol;
+
+    /** Liste des noms des agents cibles devant intercepter le message. */
+    private final List<String> receivers;
+
+    /** Identifiant de conversation unique */
+    private final String conversation_id;
+
+    /**
+     * Initialise un comportement d'envoi de message.
+     *
+     * @param myagent         L'instance de l'agent Dédale émetteur.
+     * @param conversation_id L'identifiant unique de session.
+     * @param msg             La charge utile sérialisable à transmettre sur le réseau.
+     * @param protocol        Le protocole réseau.
+     * @param receivers       La liste des agents destinataires locaux.
+     */
     public SendMsgBehaviour(final AbstractDedaleAgent myagent, String conversation_id,Serializable msg, String protocol, List<String > receivers){
         super(myagent);
         this.conversation_id = conversation_id;

@@ -14,37 +14,45 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import jade.core.behaviours.TickerBehaviour;
 
 /**
- * TickerBehaviour de l'agent IA.
- * Il exécute une boucle Perception-Décision-Action à intervalle régulier.
- * Actuellement, toutes les trois secondes.
+ * Comportement cyclique cadencé ({@link TickerBehaviour}) pilotant la boucle
+ * de contrôle Perception-Décision-Action de l'agent cognitif.
+ * <p>
+ * S'exécute à intervalles réguliers (toutes les 3000 ms) pour accomplir les étapes suivantes :
+ * </p>
+ * <ol>
+ * <li><b>Perception :</b> Collecte des observations (odeurs du Golem, alliés visibles).</li>
+ * <li><b>Prompting :</b> Traduction du contexte physique et de l'historique radio en langage naturel.</li>
+ * <li><b>Décision :</b> Inférence via le SLM local et capture des appels d'outils (Function Calling).</li>
+ * <li><b>Action</b> Exécution des ordres physiques ou déclenchement d'un déplacement de secours en cas d'hallucination.</li>
+ * </ol>
  */
 public class LlmTestBehaviour extends TickerBehaviour {
 
     @Serial
     private static final long serialVersionUID = -7646778536966020439L;
+
+    /** Compteur incrémental des tours de décision de l'agent pour les logs */
     private int turnCount = 0;
 
-    // Mémoire de l'agent
-    private List<String> visitedNodes;
+    /** Historique des nœuds visités par l'agent. */
+    private final List<String> visitedNodes;
 
-    // La topologie / carte Dédale
+    /**  La topologie / carte Dédale */
     private MapRepresentation myMap;
-    // On garde une trace simplifiée des arêtes (A-B) pour alléger le prompt du LLM
+
+    /** Instance de l'agent. */
     private LlmAgent agentIA;
 
     /**
-     * Constructeur du comportement.
-     * @param myagent L'agent Dédale auquel ce comportement est attaché.
+     * Initialise la boucle de décision de l'agent cognitif.
+     *
+     * @param myagent L'agent en question {@link AbstractDedaleAgent}.
      */
     public LlmTestBehaviour(final AbstractDedaleAgent myagent) {
         super(myagent, 3000);
         this.visitedNodes = new ArrayList<>();
     }
 
-    /**
-     * Méthode appelée à chaque tick du timer.
-     * Contient la logique complète d'un tour de l'agent.
-     */
     @Override
     public void onTick() {
         // Cast des références pour accéder aux méthodes de l'agent
@@ -82,6 +90,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
             List<String> newNeighbors = new ArrayList<>(); // Voisins adjacents que l'agent n'a jamais visités
             List<String> oldNeighbors = new ArrayList<>(); // Voisins adjacents que l'agent a déjà visités
 
+            // Analyse des signaux captés sur les nœuds adjacents
             for (Couple<Location, List<Couple<Observation, String>>> c : lobs) {
                 String neighborId = c.getLeft().getLocationId();
                 allNeighbors.add(neighborId);
@@ -105,6 +114,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                         }
                     }
                 }
+
                 // Ajout à la carte
                 this.myMap.addNewNode(neighborId); // Ajout du nœud
                 if (!myId.equals(neighborId)) {
@@ -119,6 +129,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                 else newNeighbors.add(neighborId);
             }
 
+            // CONSTRUCTEUR DE PROMPT
             StringBuilder promptBuilder = new StringBuilder();
             promptBuilder.append("You are agent ").append(myAgent.getLocalName()).append(".\n");
             promptBuilder.append("You are on node ").append(myPosition.getLocationId()).append(".\n");
@@ -131,11 +142,13 @@ public class LlmTestBehaviour extends TickerBehaviour {
             else{
                 promptBuilder.append("No visible ally ").append(".\n");
             }
+
             if (!observedWumpusNodes.isEmpty()) {
                 promptBuilder.append("!!! TARGET IN SIGHT !!! Golem(s) detected on: ").append(String.join(", ", observedWumpusNodes)).append(".\n");
                 promptBuilder.append("Warn allies immediately via 'sendMessage' and make a plan to block it. ").append(".\n");
 
             }
+
             if (!stenchCounts.isEmpty()) {
                 promptBuilder.append("--- STENCH ANALYSIS ---\n");
                 for (Map.Entry<String, Integer> entry : stenchCounts.entrySet()) {
@@ -149,6 +162,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                     }
                 }
             }
+
             List<String> inbox = agentIA.fetchInbox();
             if (!inbox.isEmpty()) {
                 promptBuilder.append("RADIO (Messages received):\n");
@@ -172,6 +186,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
             System.out.println("======================= PROMPT END =======================\n");
             System.out.println(myAgent.getLocalName() + " requesting LLM...");
 
+            // PHASE D'INFÉRENCE
             try {
                 // Chronomètre pour études de temps
                 long startTime = System.currentTimeMillis();
@@ -205,6 +220,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
                     agentIA.addBehaviour(new SendMsgBehaviour(myAgent, "", "", "PING", agentIA.getAgentList()));
                 }
 
+                // ÉXECUTION DU MOUVEMENT
                 if (nextNodeId != null && allNeighbors.contains(nextNodeId)) {
                     // L'agent tente de se déplacer vers le nœud suggéré par l'IA
                     boolean success = myAgent.moveTo(new GsLocation(nextNodeId));
@@ -231,11 +247,17 @@ public class LlmTestBehaviour extends TickerBehaviour {
         }
     }
 
+    /**
+     * Envoi un message en attente générée par le LLM via le comportement {@link SendMsgBehaviour}
+     *
+     * @param m L'instance {@link DedaleTools.PendingMessage} décrivant la transmission radio demandée.
+     */
     private void sendLlmMessage(DedaleTools.PendingMessage m) {
         if (m == null || m.content == null || m.content.isEmpty()) return;
 
         List<String> finalReceivers = new ArrayList<>();
 
+        // Gestion broadcast vs. Unicast
         if (m.receivers == null || m.receivers.equalsIgnoreCase("ALL")) {
             finalReceivers = this.agentIA.getAgentList();
         } else {
@@ -248,6 +270,7 @@ public class LlmTestBehaviour extends TickerBehaviour {
             }
         }
 
+        // Instanciation et injection du comportement d'envoi JADE
         if (!finalReceivers.isEmpty()) {
             String convId = "chat-" + System.currentTimeMillis();
             myAgent.addBehaviour(new SendMsgBehaviour(

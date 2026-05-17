@@ -15,39 +15,36 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import jade.core.behaviours.Behaviour;
 
 /**
- * Classe représentant l'agent physique dans la plateforme Dédale.
- * L'agent intègre un LLM Local pour prendre ses décisions.
+ * Agent physique cognitif autonome.
+ * <p>
+ * Cet agent hybride intègre un SLM comme moteur de raisonnement logique.
+ * Il s'appuie sur le framework LangChain4j pour le *Function Calling*
+ * et maintient une boîte de réception de messages asynchrones pour
+ * collaborer avec ses alliés (partage de cartes et radio).
+ * </p>
  */
 public class LlmAgent extends AbstractDedaleAgent {
 
     @Serial
     private static final long serialVersionUID = -6431752665590433727L;
 
-    // Le composant gérant les appels API vers Ollama.
-    // Transient car LangChain4j n'est pas sérialisable par JADE lors de la migration d'un conteneur à l'autre.
+    /** Interface LangChain4j matérialisant le "cerveau" de l'agent */
     private transient AgentBrain brain;
+    /** Registre d'outils natifs Java mis à disposition du processus d'inférence du SLM. */
     private transient DedaleTools apiTools;
+
+    /** Représentation topologique interne et persistante du graphe de l'environnement. */
     private MapRepresentation myMap;
 
-    private List<String> inbox = new ArrayList<>();
-    private List<String> agentList = new ArrayList<>();
+    /** Liste des messages textuels accumulés en tâche de fond (Radio). */
+    private final List<String> inbox = new ArrayList<>();
+    /** Liste des identifiants locaux des agents alliés présents dans la simulation. */
+    private final List<String> agentList = new ArrayList<>();
 
-    // Dans LlmAgent.java
-    private Set<String> knownEdges = new HashSet<>();
+    /** Ensemble des arêtes. */
+    private final Set<String> knownEdges = new HashSet<>();
 
-    public Set<String> getKnownEdges() {
-        return knownEdges;
-    }
-
-    public void registerEdge(String id1, String id2) {
-        if (id1.equals(id2)) return;
-        String edge = id1.compareTo(id2) < 0 ? id1 + "-" + id2 : id2 + "-" + id1;
-        this.knownEdges.add(edge);
-    }
-    
-    /**
-     * Méthode d'initialisation appelée lors de la création de l'agent sur la plateforme.
-     */
+    @Override
     protected void setup(){
         super.setup();
         final Object[] args = getArguments();
@@ -93,39 +90,96 @@ public class LlmAgent extends AbstractDedaleAgent {
                 .build();
     }
 
+    @Override
     protected void takeDown(){
         super.takeDown();
     }
 
+    @Override
     protected void beforeMove(){
         super.beforeMove();
     }
 
+    @Override
     protected void afterMove() {
         super.afterMove();
         initializeBrain();
     }
 
     /**
-     * Permet aux comportements (Behaviours) d'accéder à l'interface LangChain4j
+     * Enregistre une arête.
+     * Trie lexicographiquement les identifiants pour éviter les doublons.
+     *
+     * @param id1 L'identifiant du premier nœud de l'arête.
+     * @param id2 L'identifiant du second nœud de l'arête.
+     */
+    public void registerEdge(String id1, String id2) {
+        if (id1.equals(id2)) return;
+        String edge = id1.compareTo(id2) < 0 ? id1 + "-" + id2 : id2 + "-" + id1;
+        this.knownEdges.add(edge);
+    }
+
+
+    /** Initialise l'infrastructure de représentation de la carte géographique de l'agent. */
+    public void initializeMyMap(){this.myMap = new MapRepresentation(this.getLocalName());}
+
+    /**
+     * Récupère l'ensemble des arêtes actuellement connues de l'agent.
+     *
+     * @return Le {@link Set} contenant les id des arêtes.
+     */
+    public Set<String> getKnownEdges() {
+        return knownEdges;
+    }
+
+    /**
+     * Getter vers l'interface de communication LangChain4j du modèle de langage.
      */
     public AgentBrain getBrain() { return brain; }
 
+    /**
+     * Getter vers le registre d'outils de l'API Dédale exposé au modèle.
+     *
+     * @return L'instance {@link DedaleTools} associée.
+     */
     public DedaleTools getApiTools() { return apiTools; }
-    public void initializeMyMap(){this.myMap = new MapRepresentation(this.getLocalName());}
+
+
+    /**
+     * Getter vers la représentation cartographique de l'environnement de l'agent.
+     *
+     * @return L'instance {@link MapRepresentation} stockée.
+     */
     public MapRepresentation getMyMap(){return this.myMap;}
 
+    /**
+     * Récupère la liste des noms textuels locaux de tous les agents de l'escouade.
+     *
+     * @return La {@link List} des identifiants des alliés.
+     */
+    public List<String> getAgentList() {
+        return agentList;
+    }
+
+    /**
+     * Ajoute un message textuel (Radio alliée) à la boîte de réception.
+     *
+     * @param msg Le message formaté à archiver.
+     */
     public synchronized void addMessageToInbox(String msg) {
         this.inbox.add(msg);
     }
 
+    /**
+     * Récupère l'intégralité des messages accumulés dans la boîte de réception et la vide.
+     * Cette vidange garantit que le modèle ne traitera qu'une seule fois chaque message reçu.
+     *
+     * @return Une copie isolée sous forme de {@link List} des messages reçus.
+     */
     public synchronized List<String> fetchInbox() {
         List<String> messages = new ArrayList<>(inbox);
-        inbox.clear(); // On vide après lecture
+        inbox.clear();
         return messages;
     }
 
-    public List<String> getAgentList() {
-        return agentList;
-    }
 }

@@ -375,8 +375,7 @@ public class MapRepresentation implements Serializable {
 	}
 
     /**
-     * Retourne le nombre d'arêtes (edges) actuellement connues.
-     * Très utile pour les métriques et le benchmarking !
+     * Retourne le nombre d'arêtes actuellement connues.
      */
     public synchronized int getEdgeCount() {
         return this.nbEdges;

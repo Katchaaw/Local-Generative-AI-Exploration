@@ -1,18 +1,24 @@
-# Welcome to the Dedale project.
+# Modèle génératif local pour l’exploration et la chasse collaborative
 
-This project is developed at Sorbonne University, Paris, France. It is used in both research and teaching activities. Considering the later, during the FoSyMa course (from the French “Fondement des Systèmes Multi-Agents”) as a practical application of Multi-Agents Systems (MAS). 
-It allows Master's students to obtain a first-hand experience of some of the nice (and sometimes difficult) characteristics that comes with agents and distributed systems :
- - distribution and asynchronism (system and communication),
- - autonomy, decision and coordination in uncertain and partially observable environments
+Ce projet explore l'intégration de modèles de langage légers exécutés localement (*Small Language Models* - SLM) comme moteurs de décision au sein d'un Système Multi-Agents (SMA). Développé sur la plateforme de simulation géométrique **Dédale** (basée sur le framework **JADE**), l'objectif est de coordonner une escouade d'agents autonomes pour cartographier un environnement inconnu et encercler de manière collaborative un adversaire mobile (le Golem / Wumpus).
 
-**Your goal here is "simple", you have to conceive and implement the behaviours of a team of heterogeneous agents that have to explore an unknown environment and coordinate themselves to reach a given goal** :
- - To collect the maximum amount of treasure in a given time frame.
- - To hunt the Golem(s)
- - To patrol an area
- - To pick and deliver packages
- 
-while facing, or not, other teams.
+## 🛠️ Prérequis
 
-This game is initally inspired by the famous "Hunt the Wumpus"  of [Gregory Yob](https://en.wikipedia.org/wiki/Gregory_Yob).
+Le projet impose une **exécution 100% locale**, garantissant l'indépendance vis-à-vis des API cloud et la confidentialité des données.
 
-For more details, see Dedale's website : https://dedale.gitlab.io/
+* **Langage :** Java (OpenJDK 21 ou supérieur)
+* **Framework SMA :** JADE (Java Agent Development Framework)
+* **Environnement :** Plateforme Dédale
+* **Orchestration LLM :** LangChain4j (v0.36.0)
+* **Serveur d'inférence :** Ollama
+* **Modèle cible :** `llama3.2:3b` (3 milliards de paramètres)
+
+### Configuration d'Ollama
+Avant de lancer la simulation JADE, assurez-vous d'avoir installé Ollama et téléchargé le modèle requis :
+```bash
+ollama pull llama3.2:3b
+```
+Enfin, il suffit de le lancer dans votre terminal avant d'exécuter le fichier `Principal.java` :
+```bash
+ollama run llama3.2:3b
+```
