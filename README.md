@@ -1,24 +1,24 @@
-# Modèle génératif local pour l’exploration et la chasse collaborative
+# Local Generative Model for Collaborative Exploration and Hunting
 
-Ce projet explore l'intégration de modèles de langage légers exécutés localement (*Small Language Models* - SLM) comme moteurs de décision au sein d'un Système Multi-Agents (SMA). Développé sur la plateforme de simulation géométrique **Dédale** (basée sur le framework **JADE**), l'objectif est de coordonner une escouade d'agents autonomes pour cartographier un environnement inconnu et encercler de manière collaborative un adversaire mobile (le Golem / Wumpus).
+This project explores the integration of locally deployed lightweight language models (Small Language Models — SLMs) as decision-making engines within a Multi-Agent System (MAS). Developed on the Dédale geometric simulation platform (based on the JADE framework), the objective is to coordinate a squad of autonomous agents to map an unknown environment and collaboratively surround a mobile opponent (the Golem / Wumpus).
 
-## 🛠️ Prérequis
+## 🛠️ Requirements
 
-Le projet impose une **exécution 100% locale**, garantissant l'indépendance vis-à-vis des API cloud et la confidentialité des données.
+The project requires **100% local execution**, ensuring independence from cloud APIs and preserving data privacy.
 
-* **Langage :** Java (OpenJDK 21 ou supérieur)
-* **Framework SMA :** JADE (Java Agent Development Framework)
-* **Environnement :** Plateforme Dédale
-* **Orchestration LLM :** LangChain4j (v0.36.0)
-* **Serveur d'inférence :** Ollama
-* **Modèle cible :** `llama3.2:3b` (3 milliards de paramètres)
+* **Language:** Java (OpenJDK 21 or later)
+* **MAS Framework:** JADE (Java Agent Development Framework)
+* **Environment:** Dédale plateform
+* **LLM Orchestration:** LangChain4j (v0.36.0)
+* **Inference Server:** Ollama
+* **Target Model: ** `llama3.2:3b` (3 billion parameters)
 
-### Configuration d'Ollama
-Avant de lancer la simulation JADE, assurez-vous d'avoir installé Ollama et téléchargé le modèle requis :
+### Ollama Configuration
+Before launching the JADE simulation, make sure Ollama is installed and the required model has been downloaded:
 ```bash
 ollama pull llama3.2:3b
 ```
-Enfin, il suffit de le lancer dans votre terminal avant d'exécuter le fichier `Principal.java` :
+Finally, simply run it in your terminal before executing the Principal.java file:
 ```bash
 ollama run llama3.2:3b
 ```
